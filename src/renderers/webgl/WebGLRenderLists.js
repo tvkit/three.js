@@ -118,7 +118,7 @@ function WebGLRenderList() {
 
 		var renderItem = getNextRenderItem( object, geometry, material, groupOrder, z, group );
 
-		( material.transparent === true ? transparent : opaque ).push( renderItem );
+		( material.transparent === true || object.effectiveOpacity() !== undefined ? transparent : opaque ).push( renderItem );
 
 	}
 

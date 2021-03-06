@@ -5785,6 +5785,19 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	},
 
+	effectiveOpacity: function () {
+
+		if ( this.parent && this.parent.effectiveOpacity ) {
+
+			var parentOpacity = this.parent.effectiveOpacity();
+			return this.opacity !== undefined ? ( parentOpacity !== undefined ? this.opacity * parentOpacity : this.opacity ) : parentOpacity;
+
+		}
+		return this.opacity;
+
+	},
+
+
 	toJSON: function ( meta ) {
 
 		// meta is a string when called from JSON.stringify
@@ -18685,7 +18698,7 @@ function WebGLRenderList() {
 
 		var renderItem = getNextRenderItem( object, geometry, material, groupOrder, z, group );
 
-		( material.transparent === true ? transparent : opaque ).push( renderItem );
+		( material.transparent === true || object.effectiveOpacity() !== undefined ? transparent : opaque ).push( renderItem );
 
 	}
 
@@ -24116,7 +24129,30 @@ function WebGLRenderer( parameters ) {
 
 	};
 
+
 	this.renderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
+
+		var effectiveOpacity;
+		if ( material && ( effectiveOpacity = object.effectiveOpacity() ) !== undefined && effectiveOpacity < 1 ) {
+
+			var previousOpacity = material.opacity;
+			var previousTransparent = material.transparent;
+			material.opacity *= effectiveOpacity;
+			material.transparent = true;
+			this.doRenderBufferDirect( camera, fog, geometry, material, object, group );
+			material.opacity = previousOpacity;
+			material.transparent = previousTransparent;
+
+
+		} else {
+
+			this.doRenderBufferDirect( camera, fog, geometry, material, object, group );
+
+		}
+
+	};
+
+	this.doRenderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
 
 		var frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
 

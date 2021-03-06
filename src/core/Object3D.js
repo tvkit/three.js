@@ -630,6 +630,19 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	},
 
+	effectiveOpacity: function () {
+
+		if ( this.parent && this.parent.effectiveOpacity ) {
+
+			var parentOpacity = this.parent.effectiveOpacity();
+			return this.opacity !== undefined ? ( parentOpacity !== undefined ? this.opacity * parentOpacity : this.opacity ) : parentOpacity;
+
+		}
+		return this.opacity;
+
+	},
+
+
 	toJSON: function ( meta ) {
 
 		// meta is a string when called from JSON.stringify

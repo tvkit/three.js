@@ -709,7 +709,30 @@ function WebGLRenderer( parameters ) {
 
 	};
 
+
 	this.renderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
+
+		var effectiveOpacity;
+		if ( material && ( effectiveOpacity = object.effectiveOpacity() ) !== undefined && effectiveOpacity < 1 ) {
+
+			var previousOpacity = material.opacity;
+			var previousTransparent = material.transparent;
+			material.opacity *= effectiveOpacity;
+			material.transparent = true;
+			this.doRenderBufferDirect( camera, fog, geometry, material, object, group );
+			material.opacity = previousOpacity;
+			material.transparent = previousTransparent;
+
+
+		} else {
+
+			this.doRenderBufferDirect( camera, fog, geometry, material, object, group );
+
+		}
+
+	};
+
+	this.doRenderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
 
 		var frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
 
